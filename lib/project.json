@@ -1,7 +1,7 @@
 {
   "name": "ngx-emma",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "lib/src",
+  "sourceRoot": "lib",
   "prefix": "ngx-emma",
   "projectType": "library",
   "tags": ["angular", "ngx-emma"],

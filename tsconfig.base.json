@@ -15,9 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "ngx-emma": ["lib/src/index.ts"],
-      "ngx-emma/datatables": ["lib/datatables/src/index.ts"],
-      "ngx-emma/select": ["lib/select/src/index.ts"]
+      "@ngx-emma": ["./lib/index.ts"],
+      "@ngx-emma/datatables": ["./lib/datatables/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
