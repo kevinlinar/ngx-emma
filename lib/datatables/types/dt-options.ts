@@ -1,14 +1,43 @@
+import { Observable } from 'rxjs';
 import { DTClassName } from './dt-class-name';
 import { DTColumns } from './dt-columns';
-import { DTRow } from './dt-row';
+import { DTHttpResponse } from './dt-http';
 import { DTLanguage } from './dt-language';
-import { DTHttp } from './dt-http';
 
-export interface DTOptions {
+export interface DTOptions<T> {
   columns: DTColumns[];
-  data?: DTRow[];
+  data?: T[];
   serverSide?: boolean;
-  http?: DTHttp;
+  http?: Observable<DTHttpResponse<T>>;
   className?: DTClassName;
   language?: DTLanguage;
+  autoWidth?: boolean;
+  lengthChange?: boolean;
+  ordering?: boolean;
+  paging?: boolean;
+  scrollX?: boolean;
+  scrollY?: string;
+  displayStart?: number;
+  pageLength?: number;
+  lengthMenu?: number[];
+  search?: string;
+  searchPlaceholder?: string;
+  searchDelay?: number;
+  responsive?: boolean;
+  order?: [number, string][];
+  fixedColumns?: {
+    left?: number | undefined;
+    right?: number | undefined;
+  };
+  select?: Select;
+}
+
+export interface Select {
+  style?: string;
+  selector?: string;
+  targets?: number;
+  data?: string | null;
+  defaultContent?: string;
+  orderable?: boolean;
+  className?: string | null;
 }

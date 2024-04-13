@@ -7,5 +7,6 @@ export interface DTColumns {
   className?: Pick<DTClassName, 'th' | 'td'>;
   orderable?: boolean;
   searchable?: boolean;
+  visible?: boolean;
   width?: string;
 }

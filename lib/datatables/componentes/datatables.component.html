@@ -1,1 +1,26 @@
-<p>datatables works!</p>
+<div style="width: 100%; overflow: auto">
+  <table [class]="options().className?.table">
+    <thead [class]="options().className?.thead">
+      <tr>
+        @for (column of columns(); track $index; let last = $last) {
+        <th [class]="options().className?.th" [class]="column.className?.td">
+          {{ column.title }}
+        </th>
+        }
+      </tr>
+    </thead>
+    <tbody [class]="options().className?.tbody">
+      @for (row of showData(); track $index) {
+      <tr>
+        @for (column of columns(); track $index; let last = $last) {
+        <td [class]="options().className?.td" [class]="column.className?.td">
+          @if (column.data) {
+          {{ row | appDeepAccess: column.data }}
+          }
+        </td>
+        }
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>

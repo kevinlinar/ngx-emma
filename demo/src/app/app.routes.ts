@@ -1,3 +1,4 @@
-import { Routes } from '@angular/router';
+import { Route } from '@angular/router';
+import { datatablesPagesRoutes } from '@demo/pages/datatables/datatablesPage.routes';
 
-export const routes: Routes = [];
+export const routes: Route[] = [datatablesPagesRoutes];

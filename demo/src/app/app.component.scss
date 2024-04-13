@@ -1,0 +1,43 @@
+:host {
+  display: block;
+}
+nav {
+  display: flex;
+  flex-direction: column;
+  background-color: #1976d2;
+  border-right: 1px solid #dbdbdb;
+  a {
+    text-decoration: none;
+    color: #444;
+    padding: 1rem;
+    transition: hover 0.3s ease-in-out;
+
+    &:hover,
+    &.active {
+      color: #1669bb;
+    }
+  }
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: 'nav content';
+  min-height: 100vh;
+}
+
+.nav {
+  grid-area: nav;
+  background-color: #f2f2f2;
+}
+
+.content {
+  grid-area: content;
+  background-color: #f9f9f9;
+}
+
+::view-transition-old(nav),
+::view-transition-new(nav) {
+  animation: none;
+}

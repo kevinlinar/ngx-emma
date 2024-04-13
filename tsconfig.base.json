@@ -15,8 +15,11 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@ngx-emma": ["./lib/index.ts"],
-      "@ngx-emma/datatables": ["./lib/datatables/index.ts"]
+      "@demo/pages/*": ["demo/src/app/pages/*"],
+      "@demo/services/*": ["demo/src/app/services/*"],
+      "@demo/interfaces/*": ["demo/src/app/interfaces/*"],
+      "@ngx-emma": ["lib/index.ts"],
+      "@ngx-emma/datatables": ["lib/datatables/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
