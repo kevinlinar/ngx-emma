@@ -11,17 +11,15 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DTLangEs, DTOptionsDefault } from '../constants';
 import { DeepAccessPipe } from '../pipes/deep-access.pipe';
 import { DTHttpService } from '../services/dt-http.service';
-import {
-  DTColumns,
-  DTDataRequestColumn,
-  DTDataRequestOrder,
-  DTDataRequestSearch,
-  DTHttpResponse,
-  DTOptions,
-} from '../types';
+import { DTDataRequestSearch, DTHttpResponse, DTOptions } from '../types';
+import { convertToDTDataRequestColumn } from '../utils/convert-to-dt-data-request-column';
+import { convertToDTDataRequestOrder } from '../utils/convert-to-td-data-request-order';
+import { filterData } from '../utils/filter-data';
+import { localSort } from '../utils/local-sort';
 
 @Component({
   selector: 'ngx-emma-datatables',
@@ -38,11 +36,16 @@ export class DatatablesComponent<T> implements OnInit {
   private http = computed(() => this.options().http);
   private serverSide = computed(() => this.options().serverSide);
   protected columns = computed(() => this.options().columns);
+  protected columnsSortables = computed(() =>
+    this.columns().filter((columns) => columns.orderable !== false)
+  );
+  protected columnsSearchable = computed(() =>
+    this.columns().filter((columns) => columns.searchable !== false)
+  );
   protected showData = signal<T[]>([]);
   options = model<DTOptions<T>>({
     columns: [],
     data: [],
-    serverSide: true,
     language: DTLangEs,
   });
   constructor() {
@@ -56,15 +59,15 @@ export class DatatablesComponent<T> implements OnInit {
 
   ngOnInit(): void {
     this.setOptions({ ...(DTOptionsDefault as T), ...this.options() });
-    this.setDataRequest();
     if (this.serverSide()) {
+      this.setDataRequest();
       this.getData();
     }
   }
   private getData() {
     const http = this.http();
     if (http) {
-      http.subscribe({
+      http.pipe(takeUntilDestroyed()).subscribe({
         next: (data) => {
           this.options.update((prev) => {
             return {
@@ -83,9 +86,12 @@ export class DatatablesComponent<T> implements OnInit {
   }
   private setDataRequest(): void {
     const options = this.options();
-    const columns = this.convertColumns([...options.columns]);
+    const columns = convertToDTDataRequestColumn(
+      [...options.columns],
+      this.search
+    );
     const order = options.order
-      ? this.convertToDTDataRequestOrder(options.order)
+      ? convertToDTDataRequestOrder(options.order)
       : [{ column: 0, dir: 'asc' }];
 
     this.httpService.updateParams({
@@ -96,40 +102,53 @@ export class DatatablesComponent<T> implements OnInit {
       search: this.search,
     });
   }
-  private convertToDTDataRequestOrder(
-    input: [number, string][]
-  ): DTDataRequestOrder[] {
-    return input.map(([column, dir]) => ({
-      column,
-      dir,
-    }));
-  }
+
   private get search(): DTDataRequestSearch {
     return {
       value: '',
       regex: false,
     };
   }
-  private convertColumns(columns: DTColumns[]): DTDataRequestColumn[] {
-    return columns.map((col) => {
-      const data = col.data ?? '';
-      const name = col.name ?? '';
-      const searchable = col.searchable ?? false;
-      const orderable = col.orderable ?? false;
-      const search = this.search;
-      return {
-        data,
-        name,
-        searchable,
-        orderable,
-        search,
-      };
-    });
-  }
   private setOptions(options: DTOptions<T>) {
+    if (!this.serverSide()) {
+      const { order, data } = options;
+      if (order && data) {
+        options.data = localSort<T>(this.columnsSortables(), order, data);
+      }
+    }
     this.options.set({
       ...this.options(),
       ...options,
     });
+  }
+
+  onColumnHeaderClick(columnIndex: number): void {
+    const column = this.columns().find((_, index) => index === columnIndex);
+    if (column?.orderable === false) {
+      return;
+    }
+    const currentOrder = this.options().order?.find(
+      (o) => o[0] === columnIndex
+    );
+    let newDirection = 'asc';
+    if (currentOrder && currentOrder[1] === 'asc') {
+      newDirection = 'desc';
+    }
+    if (!this.serverSide()) {
+      this.setOptions({
+        ...this.options(),
+        order: [[columnIndex, newDirection]],
+      });
+      return;
+    }
+    this.getData();
+  }
+
+  filterData(e: string) {
+    const { data } = this.options();
+    if (!data) {
+      return;
+    }
+    this.showData.set(filterData(data, e, this.columnsSearchable()));
   }
 }

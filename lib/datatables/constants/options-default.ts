@@ -4,6 +4,6 @@ import { DTLangEs } from './lang/es';
 export const DTOptionsDefault: DTOptions<unknown> = {
   columns: [],
   data: [],
-  serverSide: true,
+  serverSide: false,
   language: DTLangEs,
 };

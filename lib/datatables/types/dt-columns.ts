@@ -9,4 +9,5 @@ export interface DTColumns {
   searchable?: boolean;
   visible?: boolean;
   width?: string;
+  ordered?: string;
 }

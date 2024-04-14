@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { User } from '@demo/interfaces/user/user';
+import { users } from '@demo/pages/datatables/constants/users.const';
 
 import {
   DTColumns,
@@ -19,6 +20,21 @@ import { map } from 'rxjs';
 })
 export class DatatablesPageComponent {
   private httpService = inject(DTHttpService);
+  http = this.httpService
+    .getData<User>({
+      url: 'https://jsonplaceholder.typicode.com/users',
+      method: 'get',
+    })
+    .pipe(
+      map((response) => {
+        const res = response as unknown as User[];
+        return {
+          recordsTotal: res.length,
+          recordsFiltered: res.length,
+          data: res,
+        };
+      })
+    );
   columns: DTColumns[] = [
     {
       title: 'ID',
@@ -33,32 +49,27 @@ export class DatatablesPageComponent {
       data: 'username',
     },
     {
+      title: 'ID',
+      data: 'id',
+    },
+    {
       title: 'Email',
       data: 'email',
     },
     {
-      title: 'latitud',
-      data: 'address.geo.lat',
+      title: 'ciudad',
+      data: 'address.city',
     },
   ];
   options = signal<DTOptions<User>>({
-    serverSide: true,
+    serverSide: false,
     columns: this.columns,
-    http: this.httpService
-      .getData<User>({
-        url: 'https://jsonplaceholder.typicode.com/users',
-        method: 'get',
-      })
-      .pipe(
-        map((response) => {
-          const res = response as unknown as User[];
-          return {
-            recordsTotal: res.length,
-            recordsFiltered: res.length,
-            data: res,
-          };
-        })
-      ),
+    //http: this.http,
+    data: users,
+    order: [
+      [0, 'asc'],
+      [1, 'asc'],
+    ],
     className: {
       table: 'table table-striped table-bordered',
     },

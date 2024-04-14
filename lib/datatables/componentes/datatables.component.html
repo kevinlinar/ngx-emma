@@ -3,7 +3,7 @@
     <thead [class]="options().className?.thead">
       <tr>
         @for (column of columns(); track $index; let last = $last) {
-        <th [class]="options().className?.th" [class]="column.className?.td">
+        <th [class]="options().className?.th" [class]="column.className?.th" (click)="onColumnHeaderClick($index)">
           {{ column.title }}
         </th>
         }
