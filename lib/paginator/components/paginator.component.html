@@ -1,0 +1,51 @@
+<div class="ngx-emma-paginator" [class.disabled]="options().disabled" [class]="options().className">
+  <div class="page-data">
+    {{startIndex()}} - {{endIndex()}} de {{totalPages()}}
+  </div>
+  @if(options().showFirstLastButtons!==false){
+  <span class="page-button first" role="link" (click)="goToPage(1)" [class.disabled]="currentPage() === 1">
+    <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24">
+      <use xlink:href="#first-page-icon" />
+    </svg>
+  </span>
+  }
+  <span class="page-button previous" role="link" (click)="changePage(-1)" [class.disabled]="currentPage() === 1">
+    <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24">
+      <use xlink:href="#previous-page-icon" />
+    </svg>
+  </span>
+  @if (options().hidePageNumber!==false) {
+  <div class="pages-number">
+    @for (page of pagesToShow(); track $index) {
+    <span class="page-button" role="link" (click)="goToPage(page)" [ngClass]="{'disabled current': currentPage() === page}">{{ page }}</span>
+    }
+  </div>
+  }
+  <span class="page-button next" role="link" (click)="changePage(1)" [class.disabled]="currentPage() === totalPages()">
+    <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24">
+      <use xlink:href="#next-page-icon" />
+    </svg>
+  </span>
+  @if(options().showFirstLastButtons!==false){
+  <span class="page-button last" role="link" (click)="goToPage(totalPages())" [class.disabled]="currentPage() === totalPages()">
+    <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24">
+      <use xlink:href="#last-page-icon" />
+    </svg>
+  </span>
+  }
+</div>
+
+<svg style="display: none;">
+  <symbol id="first-page-icon">
+    <path fill="currentColor" d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"></path>
+  </symbol>
+  <symbol id="previous-page-icon">
+    <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+  </symbol>
+  <symbol id="next-page-icon">
+    <path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+  </symbol>
+  <symbol id="last-page-icon">
+    <path fill="currentColor" d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"></path>
+  </symbol>
+</svg>

@@ -9,5 +9,6 @@ export interface DTColumns {
   searchable?: boolean;
   visible?: boolean;
   width?: string;
-  ordered?: string;
+  ordered?: DTOrderDirection | undefined;
 }
+export type DTOrderDirection = 'asc' | 'desc';

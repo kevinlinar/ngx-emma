@@ -1,3 +1,6 @@
-<div class="section section--xxl">
-  <ngx-emma-datatables [(options)]="options" (httpError)="httpError($event)" (data)="getData($event)" />
+<div class="section section--xxl" style="padding: 1rem;">
+  <ngx-emma-datatables [(options)]="options" (httpError)="httpError($event)" (data)="getData($event)" class="nowrap" />
+  <div style="display: flex; justify-content: end; padding: 1rem 0;">
+    <ngx-emma-paginator [options]="optionsPaginator()" (page)="setPage($event)" />
+  </div>
 </div>

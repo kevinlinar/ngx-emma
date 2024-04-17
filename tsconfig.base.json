@@ -15,11 +15,12 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@demo/interfaces/*": ["demo/src/app/interfaces/*"],
       "@demo/pages/*": ["demo/src/app/pages/*"],
       "@demo/services/*": ["demo/src/app/services/*"],
-      "@demo/interfaces/*": ["demo/src/app/interfaces/*"],
-      "@ngx-emma": ["lib/index.ts"],
-      "@ngx-emma/datatables": ["lib/datatables/index.ts"]
+      "ngx-emma": ["lib/index.ts"],
+      "ngx-emma/datatables": ["lib/datatables/index.ts"],
+      "ngx-emma/paginator": ["lib/paginator/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

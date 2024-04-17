@@ -1,4 +1,8 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpClientModule,
+  HttpErrorResponse,
+} from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,53 +16,96 @@ import {
   untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DTLangEs, DTOptionsDefault } from '../constants';
+import { DTLangEs } from '../constants';
 import { DeepAccessPipe } from '../pipes/deep-access.pipe';
 import { DTHttpService } from '../services/dt-http.service';
-import { DTDataRequestSearch, DTHttpResponse, DTOptions } from '../types';
+import {
+  DTDataRequestSearch,
+  DTHttpResponse,
+  DTOptions,
+  DTOrderDirection,
+} from '../types';
 import { convertToDTDataRequestColumn } from '../utils/convert-to-dt-data-request-column';
 import { convertToDTDataRequestOrder } from '../utils/convert-to-td-data-request-order';
-import { filterData } from '../utils/filter-data';
 import { localSort } from '../utils/local-sort';
-
+import { searchData } from '../utils/search-data';
+import { NgClass } from '@angular/common';
 @Component({
   selector: 'ngx-emma-datatables',
   standalone: true,
   templateUrl: './datatables.component.html',
   styleUrl: './datatables.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DeepAccessPipe],
+  imports: [DeepAccessPipe, NgClass],
 })
 export class DatatablesComponent<T> implements OnInit {
   private httpService = inject(DTHttpService);
-  protected httpError = output<HttpErrorResponse>();
-  protected data = output<DTHttpResponse<T>>();
   private http = computed(() => this.options().http);
   private serverSide = computed(() => this.options().serverSide);
-  protected columns = computed(() => this.options().columns);
+  protected httpError = output<HttpErrorResponse>();
+  protected data = output<DTHttpResponse<T>>();
+
+  protected columns = computed(() => {
+    const options = this.options();
+    return (
+      options.order?.forEach(([columnIndex, direction]) => {
+        options.columns = options.columns.map((column, index) => {
+          if (index === columnIndex) {
+            return { ...column, ordered: direction };
+          }
+          return column;
+        });
+      }) || options.columns
+    );
+  });
   protected columnsSortables = computed(() =>
     this.columns().filter((columns) => columns.orderable !== false)
   );
   protected columnsSearchable = computed(() =>
     this.columns().filter((columns) => columns.searchable !== false)
   );
-  protected showData = signal<T[]>([]);
+  protected allData = signal<T[]>([]);
+  protected showData = computed(() => {
+    const pageSize = this.options().pageLength || 10;
+    const currentPage = this.options().start || 1;
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return this.allData().slice(startIndex, endIndex);
+  });
+
   options = model<DTOptions<T>>({
     columns: [],
     data: [],
+    http: undefined,
+    serverSide: false,
     language: DTLangEs,
+    autoWidth: true,
+    lengthChange: true,
+    paging: true,
+    scrollX: true,
+    scrollY: '',
+    start: 1,
+    lengthMenu: [10, 25, 50],
+    pageLength: 10,
+    search: '',
+    searchPlaceholder: '',
+    searchDelay: 300,
+    fixedColumns: {
+      left: undefined,
+      right: undefined,
+    },
   });
+
   constructor() {
     effect(() => {
       const options = this.options();
       untracked(() => {
-        this.showData.set(options.data || []);
+        this.allData.set(options.data || []);
       });
     });
   }
 
   ngOnInit(): void {
-    this.setOptions({ ...(DTOptionsDefault as T), ...this.options() });
     if (this.serverSide()) {
       this.setDataRequest();
       this.getData();
@@ -94,8 +141,8 @@ export class DatatablesComponent<T> implements OnInit {
       ? convertToDTDataRequestOrder(options.order)
       : [{ column: 0, dir: 'asc' }];
 
-    this.httpService.updateParams({
-      start: options.displayStart || 10,
+    this.httpService?.updateParams({
+      start: options.start || 10,
       length: options.pageLength || 60,
       order,
       columns,
@@ -121,22 +168,29 @@ export class DatatablesComponent<T> implements OnInit {
       ...options,
     });
   }
-
   onColumnHeaderClick(columnIndex: number): void {
     const column = this.columns().find((_, index) => index === columnIndex);
-    if (column?.orderable === false) {
+    if (!column || column?.orderable === false) {
       return;
     }
     const currentOrder = this.options().order?.find(
       (o) => o[0] === columnIndex
     );
-    let newDirection = 'asc';
+    let newDirection: DTOrderDirection = 'asc';
     if (currentOrder && currentOrder[1] === 'asc') {
       newDirection = 'desc';
     }
     if (!this.serverSide()) {
       this.setOptions({
         ...this.options(),
+        columns: [
+          ...this.columns().map((column, index) => {
+            return {
+              ...column,
+              ordered: index === columnIndex ? newDirection : undefined,
+            };
+          }),
+        ],
         order: [[columnIndex, newDirection]],
       });
       return;
@@ -144,11 +198,11 @@ export class DatatablesComponent<T> implements OnInit {
     this.getData();
   }
 
-  filterData(e: string) {
+  searchData(e: string) {
     const { data } = this.options();
     if (!data) {
       return;
     }
-    this.showData.set(filterData(data, e, this.columnsSearchable()));
+    this.allData.set(searchData(data, e, this.columnsSearchable()));
   }
 }

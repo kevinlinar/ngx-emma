@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { DTClassName } from './dt-class-name';
-import { DTColumns } from './dt-columns';
+import { DTColumns, DTOrderDirection } from './dt-columns';
 import { DTHttpResponse } from './dt-http';
 import { DTLanguage } from './dt-language';
 
@@ -17,14 +17,13 @@ export interface DTOptions<T> {
   paging?: boolean;
   scrollX?: boolean;
   scrollY?: string;
-  displayStart?: number;
+  start?: number;
   pageLength?: number;
   lengthMenu?: number[];
   search?: string;
   searchPlaceholder?: string;
   searchDelay?: number;
-  responsive?: boolean;
-  order?: [number, string][];
+  order?: [number, DTOrderDirection][];
   fixedColumns?: {
     left?: number | undefined;
     right?: number | undefined;

@@ -2,9 +2,9 @@ import { User } from '@demo/interfaces/user/user';
 import { faker } from '@faker-js/faker';
 
 function createRandomUser(count: number): User[] {
-  if (count > 10000) {
+  /* if (count > 10000) {
     count = 10000;
-  }
+  } */
   const user: User[] = [];
   for (let i = 0; i < count; i++) {
     user[i] = {
@@ -34,4 +34,4 @@ function createRandomUser(count: number): User[] {
   return user;
 }
 
-export const users: User[] = createRandomUser(50);
+export const users: User[] = createRandomUser(1001);

@@ -1,6 +1,21 @@
 :root {
   color-scheme: light dark;
+  --linkActiveColor: #1669bb;
+  --linkColor: #2b2b2b;
+  --navBackgroundColor: #eceff7;
+  --navBorderColor: #e1e3e1;
+  --contentBackgroundColor: #f9f9f9;
 }
+@media (prefers-color-scheme: dark) {
+  :root {
+    --linkActiveColor: #fff;
+    --linkColor: #ccc;
+    --navBackgroundColor: #2b2b2b;
+    --navBorderColor: #444746;
+    --contentBackgroundColor: #3c3c3c;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

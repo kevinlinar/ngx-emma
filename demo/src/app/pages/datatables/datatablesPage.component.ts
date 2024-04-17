@@ -1,7 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { User } from '@demo/interfaces/user/user';
 import { users } from '@demo/pages/datatables/constants/users.const';
+import { Paginator } from 'ngx-emma/paginator';
 
 import {
   DTColumns,
@@ -9,12 +10,13 @@ import {
   DTHttpService,
   DTOptions,
   DatatablesComponent,
-} from '@ngx-emma/datatables';
+} from 'ngx-emma/datatables';
+import { PaginatorComponent } from 'ngx-emma/paginator';
 import { map } from 'rxjs';
 
 @Component({
   standalone: true,
-  imports: [DatatablesComponent],
+  imports: [DatatablesComponent, PaginatorComponent],
   templateUrl: './datatablesPage.component.html',
   styleUrl: './datatablesPage.component.scss',
 })
@@ -39,6 +41,7 @@ export class DatatablesPageComponent {
     {
       title: 'ID',
       data: 'id',
+      orderable: false,
     },
     {
       title: 'Nombre',
@@ -49,31 +52,54 @@ export class DatatablesPageComponent {
       data: 'username',
     },
     {
-      title: 'ID',
-      data: 'id',
-    },
-    {
       title: 'Email',
       data: 'email',
     },
     {
-      title: 'ciudad',
+      title: 'Ciudad',
       data: 'address.city',
     },
+    {
+      title: 'Teléfono',
+      data: 'phone',
+    },
+    {
+      title: 'Website',
+      data: 'website',
+    },
+    {
+      title: 'Empresa',
+      data: 'company.name',
+    },
   ];
+  optionsPaginator = computed<Paginator>(() => ({
+    length: this.options().data?.length || 0,
+    pageSize: this.options().pageLength || 10,
+    currentPage: this.options().start || 1,
+    //hidePageNumber: false,
+    //disabled: true,
+  }));
   options = signal<DTOptions<User>>({
-    serverSide: false,
+    serverSide: true,
     columns: this.columns,
     //http: this.http,
     data: users,
-    order: [
-      [0, 'asc'],
-      [1, 'asc'],
-    ],
+    lengthMenu: [10, 25, 50, 100],
+    pageLength: 10,
+    start: 1,
+    order: [[0, 'asc']],
     className: {
-      table: 'table table-striped table-bordered',
+      table: 'table table-sm table-striped table-bordered nowrap',
     },
   });
+  setPage(page: number): void {
+    this.options.update((prev) => {
+      return {
+        ...prev,
+        start: page,
+      };
+    });
+  }
 
   httpError(e: HttpErrorResponse): void {
     console.log(e);

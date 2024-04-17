@@ -1,7 +1,7 @@
 import { deepAccess } from './deep-access';
 import { DTColumns } from '../types';
 
-export const filterData = <T>(
+export const searchData = <T>(
   rows: T[],
   searchTerm: string,
   columns: DTColumns[]

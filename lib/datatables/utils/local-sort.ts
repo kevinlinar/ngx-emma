@@ -1,5 +1,5 @@
-import { DTColumns } from 'lib/datatables/types';
-import { deepAccess } from 'lib/datatables/utils/deep-access';
+import { DTColumns } from '../types';
+import { deepAccess } from './deep-access';
 
 export const localSort = <T>(
   columns: DTColumns[],

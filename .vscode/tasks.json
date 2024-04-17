@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "nx",
+      "project": "demo",
+      "command": "run",
+      "positional": "demo:serve:development",
+      "flags": ["--configuration=development", "--open=true"],
+      "problemMatcher": [],
+      "label": "nx: nx run demo:serve:development --configuration=development --open=true"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+:host {
+  display: block;
+  &.nowrap {
+    table {
+      td,
+      th {
+        white-space: nowrap;
+      }
+    }
+  }
+}
+.ngx-emma-datatables {
+  width: 100%;
+  overflow: auto;
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    &.nowrap {
+      td,
+      th {
+        white-space: nowrap;
+      }
+    }
+  }
+  .dt-th-column,
+  .dt-td-column {
+    width: 100%;
+  }
+  .dt-th-column {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    &-sortable {
+      cursor: pointer;
+    }
+    &-order {
+      width: 1rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      line-height: 0.9;
+      &:after,
+      &::before {
+        display: block;
+        font-size: 0.7rem;
+        opacity: 0.1;
+        color: currentColor;
+      }
+      &:after {
+        content: '▼';
+      }
+      &::before {
+        content: '▲';
+      }
+      &.asc {
+        &::before {
+          opacity: 0.5;
+        }
+      }
+      &.desc {
+        &::after {
+          opacity: 0.5;
+        }
+      }
+    }
+  }
+}
