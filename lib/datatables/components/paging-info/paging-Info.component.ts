@@ -5,7 +5,7 @@ import { PagingInfo } from '../../types/dt-paging-info';
   selector: 'ngx-emma-paging-info',
   standalone: true,
   templateUrl: './paging-info.component.html',
-  styleUrl: './paging-Info.component.css',
+  styleUrl: './paging-info.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PagingInfoComponent {
