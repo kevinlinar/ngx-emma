@@ -1,7 +1,4 @@
 <div class="ngx-emma-paginator" [class.disabled]="options().disabled" [class]="options().className">
-  <div class="page-data">
-    {{startIndex()}} - {{endIndex()}} de {{totalPages()}}
-  </div>
   @if(options().showFirstLastButtons!==false){
   <span class="page-button first" role="link" (click)="goToPage(1)" [class.disabled]="currentPage() === 1">
     <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24">
@@ -19,6 +16,7 @@
     @for (page of pagesToShow(); track $index) {
     <span class="page-button" role="link" (click)="goToPage(page)" [ngClass]="{'disabled current': currentPage() === page}">{{ page }}</span>
     }
+
   </div>
   }
   <span class="page-button next" role="link" (click)="changePage(1)" [class.disabled]="currentPage() === totalPages()">

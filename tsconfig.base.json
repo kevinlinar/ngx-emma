@@ -20,7 +20,8 @@
       "@demo/services/*": ["demo/src/app/services/*"],
       "ngx-emma": ["lib/index.ts"],
       "ngx-emma/datatables": ["lib/datatables/index.ts"],
-      "ngx-emma/paginator": ["lib/paginator/index.ts"]
+      "ngx-emma/paginator": ["lib/paginator/index.ts"],
+      "ngx-emma/search": ["lib/search/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

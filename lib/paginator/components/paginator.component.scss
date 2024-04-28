@@ -9,6 +9,7 @@
   &.disabled {
     opacity: 0.5;
     pointer-events: none;
+    cursor: default;
   }
   .pages {
     display: flex;
@@ -31,6 +32,7 @@
     &.disabled {
       opacity: 0.5;
       cursor: default;
+      pointer-events: none;
     }
     &.current {
       opacity: 1;

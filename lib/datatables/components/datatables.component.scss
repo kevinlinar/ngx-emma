@@ -10,59 +10,79 @@
   }
 }
 .ngx-emma-datatables {
-  width: 100%;
-  overflow: auto;
-  table {
+  &-wrapScroll {
+    overflow: auto;
+
     width: 100%;
-    border-collapse: collapse;
-    &.nowrap {
-      td,
-      th {
-        white-space: nowrap;
+    overflow: auto;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      &.nowrap {
+        td,
+        th {
+          white-space: nowrap;
+        }
       }
     }
-  }
-  .dt-th-column,
-  .dt-td-column {
-    width: 100%;
-  }
-  .dt-th-column {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.5rem;
-    &-sortable {
-      cursor: pointer;
+    .dt-th-column,
+    .dt-td-column {
+      width: 100%;
     }
-    &-order {
-      width: 1rem;
-      cursor: pointer;
+    .dt-th-column {
       display: flex;
-      flex-direction: column;
-      line-height: 0.9;
-      &:after,
-      &::before {
-        display: block;
-        font-size: 0.7rem;
-        opacity: 0.1;
-        color: currentColor;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      &-sortable {
+        cursor: pointer;
       }
-      &:after {
-        content: '▼';
-      }
-      &::before {
-        content: '▲';
-      }
-      &.asc {
+      &-order {
+        width: 1rem;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        line-height: 0.9;
+        &:after,
         &::before {
-          opacity: 0.5;
+          display: block;
+          font-size: 0.7rem;
+          opacity: 0.1;
+          color: currentColor;
+        }
+        &:after {
+          content: '▼';
+        }
+        &::before {
+          content: '▲';
+        }
+        &.asc {
+          &::before {
+            opacity: 0.5;
+          }
+        }
+        &.desc {
+          &::after {
+            opacity: 0.5;
+          }
         }
       }
-      &.desc {
-        &::after {
-          opacity: 0.5;
-        }
-      }
+    }
+  }
+  &-dt-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-auto-flow: dense;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+    &-column1 {
+      margin: 0.5rem 0;
+      justify-self: flex-start;
+    }
+    &-column2 {
+      margin: 0.5rem 0;
+      justify-self: flex-end;
     }
   }
 }

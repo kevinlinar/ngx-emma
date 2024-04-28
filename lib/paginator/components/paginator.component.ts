@@ -19,14 +19,14 @@ import { NgClass } from '@angular/common';
 export class PaginatorComponent {
   protected page = output<number>();
   protected totalPages = computed(() =>
-    Math.ceil(this.options().length / this.options().pageSize)
+    Math.ceil(this.options().length / this.options().pageSize),
   );
   protected currentPage = computed(() => this.options().currentPage || 1);
   protected startIndex = computed(
-    () => (this.currentPage() - 1) * this.options().pageSize + 1
+    () => (this.currentPage() - 1) * this.options().pageSize + 1,
   );
   protected endIndex = computed(
-    () => this.startIndex() + this.options().pageSize - 1
+    () => this.startIndex() + this.options().pageSize - 1,
   );
   protected pagesToShow = computed(() => {
     const pages: number[] = [];
@@ -55,7 +55,6 @@ export class PaginatorComponent {
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages() || this.options().disabled) return;
     this.updateCurrentPage(page);
-    this.page.emit(page);
   }
   changePage(change: number): void {
     const newPage = this.currentPage() + change;
@@ -65,12 +64,6 @@ export class PaginatorComponent {
   }
 
   private updateCurrentPage(page: number): void {
-    this.options.update((prev) => {
-      return {
-        ...prev,
-        currentPage: page,
-      };
-    });
     this.page.emit(page);
   }
 }

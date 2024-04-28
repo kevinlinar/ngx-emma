@@ -1,8 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { User } from '@demo/interfaces/user/user';
-import { users } from '@demo/pages/datatables/constants/users.const';
-import { Paginator } from 'ngx-emma/paginator';
 
 import {
   DTColumns,
@@ -11,23 +9,20 @@ import {
   DTOptions,
   DatatablesComponent,
 } from 'ngx-emma/datatables';
-import { PaginatorComponent } from 'ngx-emma/paginator';
-import { map } from 'rxjs';
 
 @Component({
   standalone: true,
-  imports: [DatatablesComponent, PaginatorComponent],
+  imports: [DatatablesComponent],
   templateUrl: './datatablesPage.component.html',
   styleUrl: './datatablesPage.component.scss',
 })
-export class DatatablesPageComponent {
+export class DatatablesPageComponent implements OnInit {
   private httpService = inject(DTHttpService);
-  http = this.httpService
-    .getData<User>({
-      url: 'https://jsonplaceholder.typicode.com/users',
-      method: 'get',
-    })
-    .pipe(
+  http = this.httpService.getData<User>({
+    url: 'http://localhost:3000/users/',
+    method: 'post',
+  });
+  /* .pipe(
       map((response) => {
         const res = response as unknown as User[];
         return {
@@ -35,13 +30,12 @@ export class DatatablesPageComponent {
           recordsFiltered: res.length,
           data: res,
         };
-      })
-    );
+      }),
+    ); */
   columns: DTColumns[] = [
     {
       title: 'ID',
       data: 'id',
-      orderable: false,
     },
     {
       title: 'Nombre',
@@ -70,33 +64,54 @@ export class DatatablesPageComponent {
     {
       title: 'Empresa',
       data: 'company.name',
+      visible: false,
     },
   ];
-  optionsPaginator = computed<Paginator>(() => ({
-    length: this.options().data?.length || 0,
-    pageSize: this.options().pageLength || 10,
-    currentPage: this.options().start || 1,
-    //hidePageNumber: false,
-    //disabled: true,
-  }));
+
   options = signal<DTOptions<User>>({
     serverSide: true,
     columns: this.columns,
-    //http: this.http,
-    data: users,
+    http: this.http,
+    //data: users,
     lengthMenu: [10, 25, 50, 100],
     pageLength: 10,
-    start: 1,
+    displayStart: 1,
     order: [[0, 'asc']],
+    searchOptions: {
+      search: '@gmail.com',
+      searchPlaceholder: 'Buscar...',
+      searchDelay: 300,
+      minlength: 3,
+      maxLength: 254,
+    },
     className: {
       table: 'table table-sm table-striped table-bordered nowrap',
     },
   });
-  setPage(page: number): void {
+
+  ngOnInit(): void {
+    setTimeout(() => {
+      this.update();
+    }, 3000);
+  }
+
+  update(): void {
     this.options.update((prev) => {
       return {
         ...prev,
-        start: page,
+        /* columns: this.columns.map((column) => {
+          const visible =
+            column.data === 'company.name' ? true : column.visible;
+          return {
+            ...column,
+            visible: visible,
+          };
+        }), */
+
+        http: this.httpService.getData<User>({
+          url: 'http://localhost:3000/users2/',
+          method: 'post',
+        }),
       };
     });
   }

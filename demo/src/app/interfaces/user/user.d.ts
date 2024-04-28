@@ -13,7 +13,7 @@ export interface Address {
   street: string;
   suite: string;
   city: string;
-  zipcode: string;
+  zipCode: string;
   geo: Geo;
 }
 
@@ -25,5 +25,5 @@ export interface Geo {
 export interface Company {
   name: string;
   catchPhrase: string;
-  bs: string;
+  buzzPhrase: string;
 }

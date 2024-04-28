@@ -1,11 +1,12 @@
-export interface Paginator {
-  length: number;
-  pageSize: number;
-  currentPage?: number;
+export interface PaginatorOptions {
   disabled?: boolean;
   showFirstLastButtons?: boolean;
-  pageSizeOptions?: number[];
   hidePageSize?: boolean;
   hidePageNumber?: boolean;
   className?: string;
+}
+export interface Paginator extends PaginatorOptions {
+  length: number;
+  pageSize: number;
+  currentPage: number;
 }

@@ -35,7 +35,7 @@ export interface DTDataRequestOrder {
 }
 
 export interface DTDataRequestColumn {
-  data: string | number;
+  data: string;
   name: string;
   searchable: boolean;
   orderable: boolean;

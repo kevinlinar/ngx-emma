@@ -1,34 +1,81 @@
 <div class="ngx-emma-datatables">
-  <table [class]="options().className?.table">
-    <thead [class]="options().className?.thead">
-      <tr>
-        @for (column of columns(); track $index; let last = $last) {
-        <th (click)="onColumnHeaderClick($index)">
-          <div class="dt-th-column" [class.dt-th-column-sortable]="column.orderable!==false" [class]="column.className?.th?column.className?.th:options().className?.td">
-            {{ column.title }}
-            @if(column.orderable!==false){
-            <span class="dt-th-column-order {{column.ordered}}"></span>
-            }
-          </div>
-        </th>
-        }
-      </tr>
-    </thead>
-    <tbody [class]="options().className?.tbody">
-      @for (row of showData(); track $index) {
-      <tr>
-        @for (column of columns(); track $index; let last = $last) {
-        <td>
-          @if (column.data) {
-          <div class="dt-td-column" [class]="column.className?.td?column.className?.td:options().className?.td">
-            {{ row | appDeepAccess: column.data }}
-          </div>
-          }
-        </td>
-        }
-      </tr>
-      }
-    </tbody>
-  </table>
 
+  <div class="ngx-emma-datatables-dt-layout">
+
+    <select name="" id="" #select (change)="pageLength=select.value">
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+    </select>
+    @if(options().search!==false){
+    <ngx-emma-search [options]="optionsSearch()" (searched)="search=$event" class="ngx-emma-datatables-dt-layout-column2" />
+    }
+  </div>
+
+  <div class="ngx-emma-datatables-wrapScroll">
+    <table [class]="options().className?.table">
+      <thead [class]="options().className?.thead">
+        <tr>
+          @for (column of columns(); track $index; let last = $last) {
+          @if(column.visible!==false){
+          <th (click)="orderColumn=$index">
+            <div class="dt-th-column" [class.dt-th-column-sortable]="column.orderable!==false" [class]="column.className?.th?column.className?.th:options().className?.td">
+              {{ column.title }}
+              @if(column.orderable!==false){
+              <span class="dt-th-column-order {{column.ordered}}"></span>
+              }
+            </div>
+          </th>
+          }
+          }
+        </tr>
+      </thead>
+      <tbody [class]="options().className?.tbody">
+        @for (row of showData(); track $index) {
+        <tr>
+          @for (column of columns(); track $index; let last = $last) {
+          @if(column.visible!==false){
+          <td>
+            @if (column.data) {
+            <div class="dt-td-column" [class]="column.className?.td?column.className?.td:options().className?.td">
+              {{ row | appDeepAccess: column.data }}
+            </div>
+            }
+          </td>
+          }
+          }
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ngx-emma-datatables-dt-layout">
+    @defer(when options().pagingInfo!==false){
+    <div class="ngx-emma-datatables-dt-layout-column1">
+      <ngx-emma-paging-info [pagingInfo]="pagingInfo()" />
+      <!-- Mostrando
+      @if(allDataLength()>0){
+      {{startIndex()}} a {{endIndex()}}
+      }@else{
+      0
+      }
+      de {{dataFiltered()}} elementos
+      @if(options().searchOptions?.search){
+      (filtrado de {{allDataLength()}} elementos total)
+      } -->
+
+
+    </div>
+    }
+    @defer(when options().paging!==false){
+    <ngx-emma-paginator [options]="optionsPaginator()" (page)="page=$event" class="ngx-emma-datatables-dt-layout-column2" />
+    }
+  </div>
+  @if(loading()){
+  <div>
+    loading..
+  </div>
+  }
 </div>

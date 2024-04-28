@@ -1,0 +1,10 @@
+Mostrando
+@if(pagingInfo().allDataLength>0){
+{{pagingInfo().startIndex}} a {{pagingInfo().endIndex}}
+}@else{
+0
+}
+de {{pagingInfo().dataFiltered}} elementos
+@if(pagingInfo().filtered){
+(filtrado de {{pagingInfo().allDataLength}} elementos total)
+}

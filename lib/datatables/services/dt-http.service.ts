@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, switchMap } from 'rxjs';
+import { Observable, Subject, switchMap } from 'rxjs';
 import { DTDataRequest, DTHttp, DTHttpResponse } from '../types';
 
 @Injectable({
@@ -8,16 +8,17 @@ import { DTDataRequest, DTHttp, DTHttpResponse } from '../types';
 })
 export class DTHttpService {
   private http = inject(HttpClient);
-  private params$ = new BehaviorSubject<DTDataRequest>({
+  /* private params$ = new BehaviorSubject<DTDataRequest>({
     start: 0,
     length: 10,
     order: [{ column: 0, dir: 'asc' }],
     columns: [],
     search: { value: '', regex: false },
-  });
+  }); */
+  private params$ = new Subject<DTDataRequest>();
 
-  updateParams(params: Partial<DTDataRequest>) {
-    this.params$.next({ ...this.params$.value, ...params });
+  updateParams(params: DTDataRequest) {
+    this.params$.next(params);
   }
 
   getData<T>({
@@ -27,6 +28,7 @@ export class DTHttpService {
     method,
   }: DTHttp): Observable<DTHttpResponse<T>> {
     return this.params$.pipe(
+      //debounceTime(300),
       switchMap((params) => {
         if (typeof data === 'object') {
           params = { ...params, data };
@@ -39,14 +41,14 @@ export class DTHttpService {
             headers,
           });
         }
-      })
+      }),
     );
   }
 
   private toHttpParams = (
     params: Record<string, unknown> | unknown,
     skipObjects = false,
-    prefix = ''
+    prefix = '',
   ): string => {
     let result = '';
     if (typeof params !== 'object' || params === null) {
@@ -71,14 +73,14 @@ export class DTHttpService {
             result += this.toHttpParams(
               value as Record<string, unknown>,
               skipObjects,
-              newPrefix
+              newPrefix,
             );
           } else if (Array.isArray(value)) {
             result += this.toHttpParams(value, skipObjects, newPrefix);
           } else {
             result += `${newPrefix}=${encodeURIComponent(String(value))}&`;
           }
-        }
+        },
       );
     }
     return result;

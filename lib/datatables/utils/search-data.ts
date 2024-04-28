@@ -4,14 +4,14 @@ import { DTColumns } from '../types';
 export const searchData = <T>(
   rows: T[],
   searchTerm: string,
-  columns: DTColumns[]
+  columns: DTColumns[],
 ): T[] => {
-  if (!searchTerm) return rows;
+  if (!searchTerm || typeof searchTerm !== 'string') return rows;
   const lowerCaseSearchTerms = searchTerm
     .toLowerCase()
     .split(' ')
     .filter((term) => term.length > 0);
-  return rows.filter((item) => {
+  const search = rows.filter((item) => {
     const concatenatedValues = columns
       .filter((column) => column.searchable !== false && column.data)
       .map((column) => {
@@ -20,7 +20,8 @@ export const searchData = <T>(
       })
       .join(' ');
     return lowerCaseSearchTerms.some((term) =>
-      concatenatedValues.includes(term)
+      concatenatedValues.includes(term),
     );
   });
+  return search;
 };

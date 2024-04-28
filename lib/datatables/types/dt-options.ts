@@ -3,6 +3,8 @@ import { DTClassName } from './dt-class-name';
 import { DTColumns, DTOrderDirection } from './dt-columns';
 import { DTHttpResponse } from './dt-http';
 import { DTLanguage } from './dt-language';
+import { PaginatorOptions } from 'ngx-emma/paginator';
+import { SearchOptions } from 'ngx-emma/search';
 
 export interface DTOptions<T> {
   columns: DTColumns[];
@@ -15,23 +17,27 @@ export interface DTOptions<T> {
   lengthChange?: boolean;
   ordering?: boolean;
   paging?: boolean;
+  pagingInfo?: boolean;
+  search?: boolean;
   scrollX?: boolean;
   scrollY?: string;
-  start?: number;
+  displayStart?: number;
   pageLength?: number;
   lengthMenu?: number[];
-  search?: string;
-  searchPlaceholder?: string;
-  searchDelay?: number;
-  order?: [number, DTOrderDirection][];
-  fixedColumns?: {
-    left?: number | undefined;
-    right?: number | undefined;
-  };
-  select?: Select;
+  searchOptions?: SearchOptions;
+  order?: DTOrderColumns;
+  paginatorOptions?: PaginatorOptions;
+  select?: DTSelect;
+  fixedColumns?: DTFixedColumns;
 }
 
-export interface Select {
+export interface DTFixedColumns {
+  left?: number | undefined;
+  right?: number | undefined;
+}
+
+export type DTOrderColumns = [number, DTOrderDirection][];
+export interface DTSelect {
   style?: string;
   selector?: string;
   targets?: number;
