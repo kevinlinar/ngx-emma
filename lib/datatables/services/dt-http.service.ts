@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, Subject, switchMap } from 'rxjs';
-import { DTDataRequest, DTHttp, DTHttpResponse } from '../types';
+import { Observable, Subject, map } from 'rxjs';
+import { DTDataRequest, DTHttp, DTHttpRequest, DTHttpResponse } from '../types';
 
 @Injectable({
   providedIn: 'root',
@@ -21,30 +21,51 @@ export class DTHttpService {
     this.params$.next(params);
   }
 
-  getData<T>({
-    url,
-    data,
-    headers,
-    method,
-  }: DTHttp): Observable<DTHttpResponse<T>> {
+  /* getData({ url, data, headers, method,  }: DTHttpRequest) {
     return this.params$.pipe(
-      //debounceTime(300),
       switchMap((params) => {
         if (typeof data === 'object') {
           params = { ...params, data };
         }
         if (method === 'post') {
-          return this.http.post<DTHttpResponse<T>>(url, params, headers);
+          return this.http.post(url, params, headers);
         } else {
           const queryString = this.toHttpParams(params).slice(0, -1);
-          return this.http.get<DTHttpResponse<T>>(`${url}?${queryString}`, {
+          return this.http.get(`${url}?${queryString}`, {
             headers,
           });
         }
       }),
     );
+  } */
+  getData<T>(
+    { url, data, headers, method, pipeResponse }: DTHttp<T>,
+    dtParameters?: DTDataRequest,
+  ): Observable<DTHttpResponse<T>> {
+    if (typeof data === 'object' && dtParameters) {
+      dtParameters = { ...dtParameters, data: data };
+    }
+    if (method === 'get') {
+      let queryString = '';
+      if (dtParameters) {
+        queryString = `?${this.toHttpParams(dtParameters).slice(0, -1)}`;
+      }
+      return this.http
+        .get(`${url}${queryString}`, {
+          headers,
+        })
+        .pipe(
+          map((response) => {
+            return pipeResponse ? pipeResponse(response as T[]) : response;
+          }),
+        ) as Observable<DTHttpResponse<T>>;
+    }
+    return this.http.post(url, dtParameters || data, headers).pipe(
+      map((response) => {
+        return pipeResponse ? pipeResponse(response as T[]) : response;
+      }),
+    ) as Observable<DTHttpResponse<T>>;
   }
-
   private toHttpParams = (
     params: Record<string, unknown> | unknown,
     skipObjects = false,

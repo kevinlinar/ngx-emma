@@ -5,6 +5,8 @@ import {
   Component,
   DestroyRef,
   OnInit,
+  afterNextRender,
+  afterRender,
   computed,
   effect,
   inject,
@@ -16,9 +18,11 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Paginator, PaginatorComponent } from 'ngx-emma/paginator';
 import { SearchComponent, SearchOptions } from 'ngx-emma/search';
+import { debounceTime, take } from 'rxjs';
 import { DeepAccessPipe } from '../pipes/deep-access.pipe';
-import { DTHttpService } from '../services/dt-http.service';
+import { DTHttpService } from '../services';
 import {
+  DTDataRequest,
   DTHttpResponse,
   DTOptions,
   DTOrderColumns,
@@ -27,7 +31,6 @@ import {
 import { PagingInfo } from '../types/dt-paging-info';
 import { convertToDTDataRequestColumn } from '../utils/convert-to-dt-data-request-column';
 import { convertToDTDataRequestOrder } from '../utils/convert-to-td-data-request-order';
-import { isValidResponse } from '../utils/is-valid-response';
 import { localSort } from '../utils/local-sort';
 import { searchData } from '../utils/search-data';
 import { PagingInfoComponent } from './paging-info/paging-Info.component';
@@ -53,7 +56,7 @@ export class DatatablesComponent<T> implements OnInit {
   });
   private serverSide = computed(() => this.options().serverSide && this.http());
 
-  protected httpError = output<HttpErrorResponse>();
+  protected error = output<Error>();
   protected data = output<DTHttpResponse<T>>();
 
   protected columns = computed(() => {
@@ -90,8 +93,8 @@ export class DatatablesComponent<T> implements OnInit {
     const currentPage = this.options().displayStart || 1;
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    if (!this.serverSide()) {
-      this.allData()?.slice(startIndex, endIndex);
+    if (!this.http()) {
+      return this.allData()?.slice(startIndex, endIndex);
     }
     return this.allData();
   });
@@ -136,28 +139,31 @@ export class DatatablesComponent<T> implements OnInit {
     effect(() => {
       const options = this.options();
       untracked(() => {
-        if (this.serverSide()) {
-          this.setDataRequest(this.options());
-        } else {
-          if (options.searchOptions && options.searchOptions.search) {
-            searchData(
-              options.data || [],
-              options.searchOptions.search,
-              this.columnsSearchable(),
-            );
-          } else {
-            this.allData.set(options.data || []);
-          }
+        if (this.http()) {
+          this.getData();
+          return;
         }
+        console.log('local');
+
+        if (options.searchOptions && options.searchOptions.search) {
+          const recordsFiltered = searchData(
+            options.data || [],
+            options.searchOptions.search,
+            this.columnsSearchable(),
+          );
+          this.allData.set(options.data || []);
+          this.dataFiltered.set(recordsFiltered.length);
+        } else {
+          this.allData.set(options.data || []);
+          this.dataFiltered.set(this.allData().length);
+        }
+        this.allDataLength.set(this.allData().length);
       });
     });
   }
 
   ngOnInit(): void {
-    this.getData();
-    if (!this.serverSide()) {
-      this.allDataLength.set(this.options().data?.length || 0);
-    }
+    console.log();
   }
 
   set pageLength(pageLength: string) {
@@ -226,33 +232,40 @@ export class DatatablesComponent<T> implements OnInit {
     });
   }
   private getData() {
-    if (!this.serverSide()) {
+    const http = this.http();
+    if (!http) {
       return;
     }
-    const http = this.http();
-    if (http) {
-      http.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (response) => {
-          if (isValidResponse(response)) {
+    try {
+      this.httpService
+        .getData<T>(http, this.setDataRequest(this.options()))
+        .pipe(debounceTime(100), takeUntilDestroyed(this.destroyRef), take(1))
+        .subscribe({
+          next: (response) => {
+            if (!Array.isArray(response.data)) {
+              throw new Error(
+                'The response does not have the expected format.',
+              );
+            }
             this.allData.set(response.data || []);
-            this.allDataLength.set(response.recordsTotal);
-            this.dataFiltered.set(response.recordsFiltered);
+            this.allDataLength.set(
+              response.recordsTotal || response.data.length,
+            );
+            this.dataFiltered.set(
+              response.recordsFiltered || response.data.length,
+            );
             this.data.emit(response);
-          } else {
-            console.error('The response does not have the expected format.');
-          }
-          this.loading.set(false);
-        },
-        error: (e: HttpErrorResponse) => {
-          this.httpError.emit(e);
-        },
-      });
+            this.loading.set(false);
+          },
+          error: (e: HttpErrorResponse) => {
+            throw new Error(e.error);
+          },
+        });
+    } catch (error) {
+      this.error.emit(error as Error);
     }
   }
-  private setDataRequest(options: DTOptions<T>): void {
-    if (!this.serverSide()) {
-      return;
-    }
+  private setDataRequest(options: DTOptions<T>): DTDataRequest {
     this.loading.set(true);
     const columns = convertToDTDataRequestColumn([...options.columns], {
       value: '',
@@ -263,7 +276,7 @@ export class DatatablesComponent<T> implements OnInit {
       : [{ column: 0, dir: 'asc' }];
     const start =
       ((options.displayStart || 1) - 1) * (options.pageLength || 10);
-    this.httpService?.updateParams({
+    return {
       start,
       length: options.pageLength || 10,
       order,
@@ -272,6 +285,6 @@ export class DatatablesComponent<T> implements OnInit {
         value: options.searchOptions?.search || '',
         regex: false,
       },
-    });
+    };
   }
 }

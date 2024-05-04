@@ -1,6 +1,8 @@
-<div class="section section--xxl" style="padding: 1rem;">
-
-
-  <ngx-emma-datatables [(options)]="options" (httpError)="httpError($event)" (data)="getData($event)" class="nowrap" />
-
+<div class="section section--xxl" style="padding: 1rem">
+  <ngx-emma-datatables
+    [(options)]="options"
+    (error)="DTError($event)"
+    (data)="getData($event)"
+    class="nowrap"
+  />
 </div>

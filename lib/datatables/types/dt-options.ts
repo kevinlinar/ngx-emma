@@ -1,16 +1,16 @@
-import { Observable } from 'rxjs';
-import { DTClassName } from './dt-class-name';
-import { DTColumns, DTOrderDirection } from './dt-columns';
-import { DTHttpResponse } from './dt-http';
-import { DTLanguage } from './dt-language';
 import { PaginatorOptions } from 'ngx-emma/paginator';
 import { SearchOptions } from 'ngx-emma/search';
+import { DTClassName } from './dt-class-name';
+import { DTColumns, DTOrderDirection } from './dt-columns';
+import { DTHttp } from './dt-http';
+import { DTLanguage } from './dt-language';
 
 export interface DTOptions<T> {
   columns: DTColumns[];
   data?: T[];
   serverSide?: boolean;
-  http?: Observable<DTHttpResponse<T>>;
+  //http?: Observable<DTHttpResponse<T>>;
+  http?: DTHttp<T>;
   className?: DTClassName;
   language?: DTLanguage;
   autoWidth?: boolean;

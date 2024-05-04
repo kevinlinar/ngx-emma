@@ -1,11 +1,10 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { User } from '@demo/interfaces/user/user';
+import { users } from '@demo/pages/datatables/constants/users.const';
 
 import {
   DTColumns,
-  DTHttpResponse,
-  DTHttpService,
+  DTHttp,
   DTOptions,
   DatatablesComponent,
 } from 'ngx-emma/datatables';
@@ -17,21 +16,18 @@ import {
   styleUrl: './datatablesPage.component.scss',
 })
 export class DatatablesPageComponent implements OnInit {
-  private httpService = inject(DTHttpService);
-  http = this.httpService.getData<User>({
+  users = users;
+  http: DTHttp<User> = {
     url: 'http://localhost:3000/users/',
-    method: 'post',
-  });
-  /* .pipe(
-      map((response) => {
-        const res = response as unknown as User[];
-        return {
-          recordsTotal: res.length,
-          recordsFiltered: res.length,
-          data: res,
-        };
-      }),
-    ); */
+    //method: 'post',
+    /* pipeResponse: (response) => {
+      return {
+        recordsTotal: response.length,
+        recordsFiltered: response.length,
+        data: response,
+      };
+    }, */
+  };
   columns: DTColumns[] = [
     {
       title: 'ID',
@@ -78,7 +74,7 @@ export class DatatablesPageComponent implements OnInit {
     displayStart: 1,
     order: [[0, 'asc']],
     searchOptions: {
-      search: '@gmail.com',
+      search: '',
       searchPlaceholder: 'Buscar...',
       searchDelay: 300,
       minlength: 3,
@@ -96,31 +92,21 @@ export class DatatablesPageComponent implements OnInit {
   }
 
   update(): void {
-    this.options.update((prev) => {
+    /* this.options.update((prev) => {
       return {
         ...prev,
-        /* columns: this.columns.map((column) => {
-          const visible =
-            column.data === 'company.name' ? true : column.visible;
-          return {
-            ...column,
-            visible: visible,
-          };
-        }), */
-
-        http: this.httpService.getData<User>({
-          url: 'http://localhost:3000/users2/',
-          method: 'post',
-        }),
+        http: {
+          url: `http://localhost:3000/users/2/`,
+        },
       };
-    });
+    }); */
   }
 
-  httpError(e: HttpErrorResponse): void {
+  DTError(e: Error): void {
     console.log(e);
   }
 
-  getData(e: DTHttpResponse<User>): void {
+  getData(e: unknown): void {
     console.log(e);
   }
 }
