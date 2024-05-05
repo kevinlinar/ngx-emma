@@ -18,15 +18,26 @@ import {
 export class DatatablesPageComponent implements OnInit {
   users = users;
   http: DTHttp<User> = {
-    url: 'http://localhost:3000/users/',
-    //method: 'post',
-    /* pipeResponse: (response) => {
+    url: 'http://localhost:3000/users',
+  };
+  http2: DTHttp<User> = {
+    url: 'http://localhost:3000/users/1',
+    method: 'get',
+    pipeResponse: (response) => {
       return {
         recordsTotal: response.length,
         recordsFiltered: response.length,
         data: response,
       };
-    }, */
+    },
+  };
+  http3: DTHttp<User> = {
+    url: 'http://localhost:3000/users/2',
+    pipeResponse: (response) => {
+      return {
+        data: response,
+      };
+    },
   };
   columns: DTColumns[] = [
     {
@@ -65,10 +76,11 @@ export class DatatablesPageComponent implements OnInit {
   ];
 
   options = signal<DTOptions<User>>({
-    serverSide: true,
+    serverSide: false,
+
     columns: this.columns,
-    http: this.http,
-    //data: users,
+    http: this.http3,
+    data: users,
     lengthMenu: [10, 25, 50, 100],
     pageLength: 10,
     displayStart: 1,
@@ -103,10 +115,10 @@ export class DatatablesPageComponent implements OnInit {
   }
 
   DTError(e: Error): void {
-    console.log(e);
+    console.error(e);
   }
 
   getData(e: unknown): void {
-    console.log(e);
+    //console.log(e);
   }
 }
