@@ -22,12 +22,14 @@ import {
   DTOptions,
   DTOrderColumns,
   DTOrderDirection,
+  DTLengthMenu,
 } from '../types';
 import { PagingInfo } from '../types/dt-paging-info';
 import { convertToDTDataRequestColumn } from '../utils/convert-to-dt-data-request-column';
 import { convertToDTDataRequestOrder } from '../utils/convert-to-td-data-request-order';
 import { localSort } from '../utils/local-sort';
 import { searchData } from '../utils/search-data';
+import { LengthMenuComponent } from './length-menu/length-menu.component';
 import { PagingInfoComponent } from './paging-info/paging-Info.component';
 @Component({
   selector: 'ngx-emma-datatables',
@@ -41,6 +43,7 @@ import { PagingInfoComponent } from './paging-info/paging-Info.component';
     PaginatorComponent,
     SearchComponent,
     PagingInfoComponent,
+    LengthMenuComponent,
   ],
 })
 export class DatatablesComponent<T> {
@@ -49,8 +52,37 @@ export class DatatablesComponent<T> {
     return this.options().http;
   });
   private serverSide = computed(() => this.options().serverSide);
+  private dataRequest = computed<DTDataRequest>(() => {
+    const options = this.options();
+    const lengthMenu = untracked(() => this.lengthMenu().length);
+    const columns = convertToDTDataRequestColumn([...options.columns], {
+      value: '',
+      regex: false,
+    });
+    const order = options.order
+      ? convertToDTDataRequestOrder(options.order)
+      : [{ column: 0, dir: 'asc' }];
+    const start = ((options.displayStart || 1) - 1) * lengthMenu;
+    return {
+      start,
+      length: lengthMenu,
+      order,
+      columns,
+      search: {
+        value: options.searchOptions?.search || '',
+        regex: false,
+      },
+    };
+  });
   protected error = output<Error>();
   protected data = output<DTHttpResponse<T>>();
+  protected lengthMenu = computed<DTLengthMenu>(() => {
+    return {
+      menu: this.options().lengthMenu?.menu || [10, 25, 50, 100],
+      length: this.options().lengthMenu?.length || 10,
+    };
+  });
+
   protected columns = computed(() => {
     const options = this.options();
     return (
@@ -80,7 +112,7 @@ export class DatatablesComponent<T> {
     };
   });
   protected showData = computed(() => {
-    const pageSize = this.options().pageLength || 10;
+    const pageSize = this.lengthMenu().length;
     const currentPage = this.options().displayStart || 1;
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
@@ -95,14 +127,13 @@ export class DatatablesComponent<T> {
   protected optionsPaginator = computed<Paginator>(() => {
     return {
       length: this.dataFiltered(),
-      pageSize: this.options().pageLength || 10,
+      pageSize: this.lengthMenu().length,
       currentPage: this.options().displayStart || 1,
-      hidePageNumber: this.options().paginatorOptions?.hidePageNumber,
-      disabled: this.options().paginatorOptions?.disabled,
-      showFirstLastButtons:
-        this.options().paginatorOptions?.showFirstLastButtons,
-      hidePageSize: this.options().paginatorOptions?.hidePageSize,
-      className: this.options().paginatorOptions?.className,
+      hidePageNumber: this.options().paginator?.hidePageNumber,
+      disabled: this.options().paginator?.disabled,
+      showFirstLastButtons: this.options().paginator?.showFirstLastButtons,
+      hidePageSize: this.options().paginator?.hidePageSize,
+      className: this.options().paginator?.className,
     };
   });
   protected optionsSearch = computed<SearchOptions>(() => ({
@@ -114,9 +145,7 @@ export class DatatablesComponent<T> {
   }));
   protected startIndex = computed(() => {
     const showing =
-      ((this.options().displayStart || 1) - 1) *
-        (this.options().pageLength || 10) +
-      1;
+      ((this.options().displayStart || 1) - 1) * this.lengthMenu().length + 1;
     return showing > this.dataFiltered() ? this.dataFiltered() : showing;
   });
   protected endIndex = computed(() => {
@@ -130,6 +159,7 @@ export class DatatablesComponent<T> {
   protected dataReceived = signal(false);
 
   public options = model.required<DTOptions<T>>();
+
   constructor() {
     effect(() => {
       const options = this.options();
@@ -160,7 +190,54 @@ export class DatatablesComponent<T> {
       });
     });
   }
-  protected set orderColumn(columnIndex: number) {
+
+  private getData() {
+    const http = this.http();
+    if (!http) {
+      return;
+    }
+    this.loading.set(true);
+    this.httpService
+      .getData<T>(http, this.dataRequest())
+      .pipe(
+        debounceTime(100),
+        take(1),
+        catchError((error) => {
+          return throwError(() => error);
+        }),
+      )
+      .subscribe({
+        next: (response) => {
+          if (!Array.isArray(response.data)) {
+            console.error(DTErrors.EXPECTED_FORMAT);
+            this.error.emit(new Error(DTErrors.EXPECTED_FORMAT));
+            return;
+          }
+          this.dataReceived.set(true);
+          this.allData.set(response.data || []);
+          this.allDataLength.set(response.recordsTotal || response.data.length);
+          this.dataFiltered.set(
+            response.recordsFiltered || response.data.length,
+          );
+          if (!this.serverSide()) {
+            this.options.update((prev) => ({
+              ...prev,
+              data: response.data,
+            }));
+          }
+          this.data.emit(response);
+          this.loading.set(false);
+        },
+        error: (error) => {
+          this.dataReceived.set(false);
+          this.loading.set(false);
+          console.error(DTErrors.HTTP_ERROR, '\n', error);
+          this.error.emit(error);
+        },
+      });
+  }
+
+  set orderColumn(columnIndex: number) {
     const column = this.columns().find((_, index) => index === columnIndex);
     if (!column || column?.orderable === false) {
       return;
@@ -202,79 +279,13 @@ export class DatatablesComponent<T> {
     });
   }
 
-  private getData() {
-    const http = this.http();
-    if (!http) {
-      return;
-    }
-    this.loading.set(true);
-    this.httpService
-      .getData<T>(http, this.setDataRequest(this.options()))
-      .pipe(
-        debounceTime(100),
-        take(1),
-        catchError((error) => {
-          return throwError(() => error);
-        }),
-      )
-      .subscribe({
-        next: (response) => {
-          if (!Array.isArray(response.data)) {
-            console.error(DTErrors.EXPECTED_FORMAT);
-            this.error.emit(new Error(DTErrors.EXPECTED_FORMAT));
-            return;
-          }
-          this.dataReceived.set(true);
-          this.allData.set(response.data || []);
-          this.allDataLength.set(response.recordsTotal || response.data.length);
-          this.dataFiltered.set(
-            response.recordsFiltered || response.data.length,
-          );
-          if (!this.serverSide()) {
-            this.options.update((prev) => ({
-              ...prev,
-              data: response.data,
-            }));
-          }
-          this.data.emit(response);
-          this.loading.set(false);
-        },
-        error: (error) => {
-          this.dataReceived.set(false);
-          this.loading.set(false);
-          console.error(DTErrors.HTTP_ERROR, '\n', error);
-          this.error.emit(error);
-        },
-      });
-  }
-
-  private setDataRequest(options: DTOptions<T>): DTDataRequest {
-    this.loading.set(true);
-    const columns = convertToDTDataRequestColumn([...options.columns], {
-      value: '',
-      regex: false,
-    });
-    const order = options.order
-      ? convertToDTDataRequestOrder(options.order)
-      : [{ column: 0, dir: 'asc' }];
-    const start =
-      ((options.displayStart || 1) - 1) * (options.pageLength || 10);
-    return {
-      start,
-      length: options.pageLength || 10,
-      order,
-      columns,
-      search: {
-        value: options.searchOptions?.search || '',
-        regex: false,
-      },
-    };
-  }
-
-  set pageLength(pageLength: string) {
+  set pageLength(pageLength: number) {
     this.options.update((prev) => ({
       ...prev,
-      pageLength: Number(pageLength),
+      lengthMenu: {
+        menu: this.options().lengthMenu?.menu || [10, 25, 50, 100],
+        length: pageLength,
+      },
       displayStart: 1,
     }));
   }

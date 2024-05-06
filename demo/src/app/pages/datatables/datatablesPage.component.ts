@@ -1,4 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { User } from '@demo/interfaces/user/user';
 import { users } from '@demo/pages/datatables/constants/users.const';
 
@@ -16,6 +22,7 @@ import {
   styleUrl: './datatablesPage.component.scss',
 })
 export class DatatablesPageComponent implements OnInit {
+  datatables = viewChild.required(DatatablesComponent<User>);
   users = users;
   http: DTHttp<User> = {
     url: 'http://localhost:3000/users',
@@ -76,13 +83,15 @@ export class DatatablesPageComponent implements OnInit {
   ];
 
   options = signal<DTOptions<User>>({
-    serverSide: false,
-
+    serverSide: true,
     columns: this.columns,
-    http: this.http3,
+    http: this.http,
     data: users,
-    lengthMenu: [10, 25, 50, 100],
-    pageLength: 10,
+    lengthMenu: {
+      menu: [10, 25, 50, 100],
+      length: 10,
+    },
+
     displayStart: 1,
     order: [[0, 'asc']],
     searchOptions: {
@@ -99,7 +108,16 @@ export class DatatablesPageComponent implements OnInit {
 
   ngOnInit(): void {
     setTimeout(() => {
-      this.update();
+      //this.update();
+      /*  this.datatables().search = '@gmail.com'; */
+      /* this.datatables().pageLength = 25; */
+      /* this.datatables().page = 2;
+      this.datatables().orderColumn = 1; */
+      /*  this.datatables().options.set({
+        ...this.options(),
+        serverSide: false,
+        http: this.http3,
+      }); */
     }, 3000);
   }
 
@@ -107,8 +125,13 @@ export class DatatablesPageComponent implements OnInit {
     /* this.options.update((prev) => {
       return {
         ...prev,
-        http: {
-          url: `http://localhost:3000/users/2/`,
+        lengthMenu: {
+          menu: [10, 25, 50, 100],
+          length: 25,
+        },
+        searchOptions: {
+          ...prev.searchOptions,
+          search: 'gmail.com',
         },
       };
     }); */

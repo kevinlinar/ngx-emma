@@ -1,7 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   OnInit,
+  effect,
+  inject,
   model,
   output,
 } from '@angular/core';
@@ -13,6 +16,7 @@ import {
 } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { SearchOptions } from '../types/search-options';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'ngx-emma-search',
@@ -23,6 +27,7 @@ import { SearchOptions } from '../types/search-options';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   protected searched = output<string>();
   options = model<SearchOptions>({
     search: '',
@@ -32,6 +37,14 @@ export class SearchComponent implements OnInit {
     maxLength: 255,
   });
   searchControl = new FormControl<string>('');
+
+  constructor() {
+    effect(() => {
+      this.searchControl.patchValue(this.options()?.search || '', {
+        emitEvent: false,
+      });
+    });
+  }
   ngOnInit() {
     this.searchControl.setValue(this.options()?.search || '');
     const { minlength, maxLength } = this.options();
@@ -49,6 +62,7 @@ export class SearchComponent implements OnInit {
       .pipe(
         debounceTime(this.options()?.searchDelay || 300),
         distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((value) => {
         if (this.searchControl.valid) {

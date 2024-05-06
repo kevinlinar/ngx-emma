@@ -4,4 +4,5 @@ export interface SearchOptions {
   searchDelay?: number;
   minlength?: number;
   maxLength?: number;
+  visible?: boolean;
 }

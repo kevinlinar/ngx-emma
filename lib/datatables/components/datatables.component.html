@@ -1,12 +1,10 @@
 <div class="ngx-emma-datatables">
   <div class="ngx-emma-datatables-dt-layout">
-    <select name="" id="" #select (change)="pageLength = select.value">
-      <option value="10">10</option>
-      <option value="20">20</option>
-      <option value="50">50</option>
-      <option value="100">100</option>
-    </select>
-    @if (options().search !== false) {
+    <ngx-emma-length-menu
+      [lengthMenu]="lengthMenu()"
+      (length)="pageLength = $event"
+    />
+    @if (options().searchOptions?.visible !== false) {
       <ngx-emma-search
         [options]="optionsSearch()"
         (searched)="search = $event"
@@ -75,7 +73,7 @@
         <ngx-emma-paging-info [pagingInfo]="pagingInfo()" />
       </div>
     }
-    @defer (when options().paging!==false) {
+    @defer (when options().paginator?.visible!==false) {
       <ngx-emma-paginator
         [options]="optionsPaginator()"
         (page)="page = $event"

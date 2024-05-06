@@ -1,0 +1,5 @@
+<select [formControl]="lengthMenuControl">
+  @for (item of lengthMenu().menu; track $index) {
+    <option [value]="item">{{ item }}</option>
+  }
+</select>

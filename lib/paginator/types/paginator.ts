@@ -4,6 +4,7 @@ export interface PaginatorOptions {
   hidePageSize?: boolean;
   hidePageNumber?: boolean;
   className?: string;
+  visible?: boolean;
 }
 export interface Paginator extends PaginatorOptions {
   length: number;
